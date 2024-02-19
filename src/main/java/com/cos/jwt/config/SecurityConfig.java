@@ -15,9 +15,11 @@ import org.springframework.security.web.context.SecurityContextPersistenceFilter
 import org.springframework.web.filter.CorsFilter;
 
 import com.cos.jwt.config.jwt.JwtAuthenticationFilter;
+import com.cos.jwt.config.jwt.JwtAuthorizationFilter;
 import com.cos.jwt.filter.MyFilter1;
 import com.cos.jwt.filter.MyFilter2;
 import com.cos.jwt.filter.MyFilter3;
+import com.cos.jwt.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -26,8 +28,9 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class SecurityConfig {
 	
-	@Autowired
+	//@Autowired
 	private final CorsFilter corsFilter;
+	private final UserRepository userRepository;
 
 	
 	@Bean
@@ -39,10 +42,10 @@ public class SecurityConfig {
 		
 		//필터걸기
 		//BasicAuthenticationFilter가 시작하기 전에 MyFilter1가 걸린다 -> 이렇게 걸면됨 -> 필터 실행 순서를 알아야함
-		http.addFilterBefore(new MyFilter2(), BasicAuthenticationFilter.class); // 두번째 -> 그 다음에 이제 filterconfig
+		//http.addFilterBefore(new MyFilter2(), BasicAuthenticationFilter.class); // 두번째 -> 그 다음에 이제 filterconfig
 		//그런데 여기다 걸 필요는 없고 따로 필터컨피그 만들어서 걸어도 됨 ->filterconfig보다 시큐리티 필터가 먼저 실행된다
 		//시큐리티 필터보다 먼저 실행하게 만들기 위해서는 이렇게 따로 설정한다
-		http.addFilterBefore(new MyFilter3(), SecurityContextPersistenceFilter.class); // 제일 먼저 실행됨
+		//http.addFilterBefore(new MyFilter3(), SecurityContextPersistenceFilter.class); // 제일 먼저 실행됨
 		
 		//deprecated 제거
 		http.csrf(c->c.disable())
@@ -71,8 +74,9 @@ public class SecurityConfig {
         @Override
         public void configure(HttpSecurity http) throws Exception {
             AuthenticationManager authenticationManager = http.getSharedObject(AuthenticationManager.class);
-            http.addFilter(new JwtAuthenticationFilter(authenticationManager));
-
+            http.addFilter(new JwtAuthenticationFilter(authenticationManager)) //로그인 인증하는 필터
+            	.addFilter(new JwtAuthorizationFilter(authenticationManager, userRepository)); //토큰 유요한지 판단하는 필터?
+            	//인증이나 권한이 필요한 주소요청이 있을 때 해당 필터를 타게 됨.
         }
     }
 	

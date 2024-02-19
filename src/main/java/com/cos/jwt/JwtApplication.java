@@ -9,6 +9,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 public class JwtApplication {
 	
 	// 무한참조 오류 방지 여기다 선언해줌
+	//IoC 등록
 	@Bean
 	public BCryptPasswordEncoder passwordEncoder() {
 		return new BCryptPasswordEncoder();
